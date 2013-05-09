@@ -74,10 +74,15 @@
 
             var handleTouchStart = function(e) {
                 e.stopPropagation();
+                e.preventDefault();
                 var coords = e.touches ? e.touches[0] : e; // Android weirdness fix
 
                 touches[0] = coords.pageX;
                 touches[1] = coords.pageY;
+
+                // .onpress-inactive => .onpress-active
+                that.addClass('onpress-active');
+                that.removeClass('onpress-inactive');
 
                 $doc.on('touchmove.onpress', handleTouchMove);
                 args[0] ? that.on('touchend.onpress', args[0], handleTouchEnd) : that.on('touchend.onpress', handleTouchEnd);
@@ -100,6 +105,10 @@
             };
 
             var resetHandlers = function() {
+                // .onpress-active => .onpress-inactive
+                that.addClass('onpress-inactive');
+                that.removeClass('onpress-active');
+
                 $doc.off('touchmove.onpress', handleTouchMove);
                 args[0] ? that.off('touchend.onpress', args[0], handleTouchEnd) : that.off('touchend.onpress', handleTouchEnd);
             };
@@ -107,14 +116,15 @@
             callbacks.push(args[1]);
             handlers.push(handleTouchStart);
 
+            // .onpress-inactive
+            this.addClass('onpress-inactive');
+
             if (args[0]) {
                 this.on('touchstart.onpress', args[0], handleTouchStart);
-                //this.on('click', args[0], handleTouchStart);
                 this.on('press.onpress', args[0], args[1]);
             }
             else {
                 this.on('touchstart.onpress', handleTouchStart);
-                //this.on('click', handleTouchStart);
                 this.on('press.onpress', args[1]);
             }
         };
@@ -122,6 +132,9 @@
         $.fn.offpress = function() {
             var args = normalizeArgs(arguments),
                 i;
+
+            // .onpress-inactive
+            this.removeClass('onpress-inactive');
 
             if (args[1]) {
                 i = callbacks.indexOf(args[1]);
@@ -132,12 +145,10 @@
 
                 if (args[0]) {
                     this.off('touchstart.onpress', args[0], handlers[i]);
-                    //this.off('click.onpress', args[0], handlers[i]);
                     this.off('press.onpress', args[0], args[1]);
                 }
                 else {
                     this.off('touchstart.onpress', handlers[i]);
-                    //this.off('click.onpress', handlers[i]);
                     this.off('press.onpress', args[1]);
                 }
                 callbacks.splice(i, 1);
@@ -146,12 +157,10 @@
             else {
                 if (args[0]) {
                     this.off('touchstart.onpress', args[0]);
-                    //this.off('click.onpress', args[0]);
                     this.off('press.onpress', args[0]);
                 }
                 else {
                     this.off('touchstart.onpress');
-                    //this.off('click.onpress');
                     this.off('press.onpress');
                 }
             }
